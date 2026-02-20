@@ -1,0 +1,121 @@
+Schritt 0: Das Fundament (Die Ordnerstruktur)
+Bevor du die erste Zeile tippst, erstelle einen Ordner. In diesem Ordner erstellst du vier leere Textdateien:
+dal.py (Data)
+bll.py (Logik)
+pl.py (Anzeige)
+main.py (Starter)
+Schritt 1: Die Datenhaltung (dal.py)
+Warum fangen wir hier an? Ohne einen Ort, an dem Daten gespeichert werden, kann die Logik nichts verarbeiten und die Anzeige nichts zeigen. Der DAL ist die "Basis der Wahrheit".
+python
+class DataAccessLayer:
+    def __init__(self):
+        # Warum ein Dictionary?
+        # Weil wir über die 'id' (Key) blitzschnell auf ein Haus (Value) zugreifen können.
+        self.ferienhaeuser = {}
+
+    def hinzufuegen(self, haus_daten):
+        # Warum haus_daten["id"]?
+        # Wir nehmen das Paket (Dict) und nutzen seine eigene ID als Etikett im Schrank.
+        self.ferienhaeuser[haus_daten["id"]] = haus_daten
+
+    def abrufen(self, haus_id):
+        # Warum .get()?
+        # Es verhindert Abstürze. Wenn die ID nicht da ist, gibt es 'None' statt eines Fehlers.
+        return self.ferienhaeuser.get(haus_id)
+Verwende Code mit Vorsicht.
+
+Schritt 2: Die Geschäftslogik (bll.py)
+Warum jetzt die BLL? Hier legen wir fest, wie unser Geschäft funktioniert. Die BLL ist der "Filter" zwischen dem User und den Rohdaten.
+python
+class BusinessLogicLayer:
+    def __init__(self, dal_objekt):
+        # WARUM DAS? Das ist "Dependency Injection".
+        # Die BLL erstellt keinen eigenen DAL, sondern bekommt einen "geliehen".
+        # So kann die BLL auf die Methoden des DAL zugreifen.
+        self.dal = dal_objekt
+
+    def haus_erstellen(self, h_id, name, ort, preis, kapazitaet):
+        # SCHRITT 1: Prüfung (Validierung)
+        # Wir fragen den DAL: "Gibt es diese ID schon?"
+        if self.dal.abrufen(h_id):
+            return False, "Fehler: ID existiert bereits!"
+
+        # SCHRITT 2: Daten-Strukturierung
+        # Wir bauen das "Objekt" zusammen. Die BLL bestimmt, wie ein Haus aussieht.
+        neues_haus = {
+            "id": h_id,
+            "name": name,
+            "ort": ort,
+            "preis_pro_nacht": preis,
+            "kapazitaet": kapazitaet,
+            "verfuegbarkeit": True
+        }
+
+        # SCHRITT 3: Speichern
+        self.dal.hinzufuegen(neues_haus)
+        return True, "Haus erfolgreich angelegt."
+Verwende Code mit Vorsicht.
+
+Schritt 3: Die Benutzeroberfläche (pl.py)
+Warum als Drittes? Die PL ist nur die "Hülle". Sie weiß nichts über Datenbanken oder Regeln. Sie weiß nur, wie man Fragen stellt und Antworten ausgibt.
+python
+class PresentationLayer:
+    def __init__(self, bll_objekt):
+        # Auch hier: Die PL bekommt die Logik "geliehen".
+        self.bll = bll_objekt
+
+    def start(self):
+        # Warum eine While-Schleife?
+        # Damit das Programm nicht nach einer Aktion sofort beendet wird.
+        while True:
+            print("\n--- MENÜ ---")
+            print("1. Haus hinzufügen")
+            wahl = input("Ihre Wahl: ")
+
+            if wahl == "1":
+                # DATEN SAMMELN (Input ist immer Text/String!)
+                hid = input("ID: ")
+                n = input("Name: ")
+                # Warum float/int? Weil wir mit Preisen rechnen wollen.
+                p = float(input("Preis: "))
+
+                # DIE LOGIK FRAGEN
+                # Wir schicken die Daten an die BLL und warten auf Antwort (ok und Nachricht)
+                ok, msg = self.bll.haus_erstellen(hid, n, "Berlin", p, 4)
+                print(msg)
+Verwende Code mit Vorsicht.
+
+Schritt 4: Die Montage (main.py)
+Warum diese Datei? Das ist der Architekt. Er kauft die Möbel (Objekte) und stellt sie in die richtige Reihenfolge.
+python
+from dal import DataAccessLayer
+from bll import BusinessLogicLayer
+from pl import PresentationLayer
+
+def main():
+    # 1. Zuerst das Lager (Ganz unten)
+    lager = DataAccessLayer()
+
+    # 2. Dann die Logik, und wir geben ihr das Lager
+    logik = BusinessLogicLayer(lager)
+
+    # 3. Dann die Anzeige, und wir geben ihr die Logik
+    anzeige = PresentationLayer(logik)
+
+    # 4. Start!
+    anzeige.start()
+
+# Warum dieser Block? Damit die main() nur startet, wenn wir DIESE Datei direkt ausführen.
+if __name__ == "__main__":
+    main()
+Verwende Code mit Vorsicht.
+
+Zusammenfassung: Der "Fluss" einer Aktion
+Wenn du eine "1" drückst, passiert folgendes:
+PL: Sammelt deinen Namen und Preis per input().
+PL -> BLL: Ruft bll.haus_erstellen() auf.
+BLL: Prüft im dal mit abrufen(), ob die ID frei ist.
+BLL -> DAL: Wenn okay, ruft sie dal.hinzufuegen() auf.
+DAL: Schreibt es in das Dictionary self.ferienhaeuser.
+BLL -> PL: Gibt ein True zurück.
+PL: Druckt "Erfolgreich angelegt" für dich aus.

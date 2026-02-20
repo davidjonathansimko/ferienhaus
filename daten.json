@@ -1,0 +1,10 @@
+{
+    "01": {
+        "id": "01",
+        "name": "Villa",
+        "ort": "Spanien",
+        "preis_pro_nacht": 120.0,
+        "kapazitaet": 6,
+        "verfuegbarkeit": false
+    }
+}

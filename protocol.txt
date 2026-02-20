@@ -1,0 +1,106 @@
+1. Das Konzept verstehen (Die Rollenverteilung)
+Bevor du tippst, musst du wissen, wer was macht. Stell dir ein Restaurant vor:
+DAL (Data Access Layer): Das Lager/Kühlschrank. Hier liegen die Daten. Er weiß nicht, was ein "Gast" ist, er gibt nur Zutaten raus oder legt sie hinein.
+BLL (Business Logic Layer): Der Koch. Er entscheidet: "Darf ich dieses Haus buchen?" oder "Ist die ID schon vergeben?". Hier sind die Regeln.
+PL (Presentation Layer): Der Kellner. Er spricht mit dem Kunden (Input/Output) und zeigt die Speisekarte an.
+2. Die Reihenfolge: Womit fange ich an?
+Wenn du ein neues Projekt startest, arbeitest du dich am besten von unten nach oben (von den Daten zum Benutzer) vor:
+DAL: Zuerst definieren, wie Daten gespeichert werden.
+BLL: Dann die Logik bauen, die diese Daten nutzt.
+PL: Zum Schluss die Benutzeroberfläche erstellen.
+Main: Alles miteinander verknüpfen.
+3. Schritt-für-Schritt Anleitung
+Schritt 1: Der Datentresor (dal.py)
+Wir fangen mit der untersten Schicht an. Hier geht es nur um das Speichern, Suchen und Ändern.
+python
+class DataAccessLayer:
+    def __init__(self):
+        # Wir starten mit einem leeren Dictionary als Speicher
+        self.ferienhaeuser = {}
+
+    def hinzufuegen(self, haus_daten):
+        # Nimmt ein Dictionary an und speichert es unter seiner ID
+        self.ferienhaeuser[haus_daten["id"]] = haus_daten
+
+    def abrufen(self, haus_id):
+        # Gibt die Daten zurück oder None, wenn nichts gefunden wurde
+        return self.ferienhaeuser.get(haus_id)
+
+    def alle_auflisten(self):
+        # Hilfsmethode, um alle Einträge als Liste zu sehen
+        return list(self.ferienhaeuser.values())
+Verwende Code mit Vorsicht.
+
+Schritt 2: Das Gehirn (bll.py)
+Jetzt bauen wir die Logik. Wichtig: Die BLL darf niemals direkt auf self.ferienhaeuser zugreifen, sondern nutzt immer die Methoden des dal-Objekts.
+python
+class BusinessLogicLayer:
+    def __init__(self, dal_objekt):
+        # Wir "injizieren" den DAL, damit die BLL darauf zugreifen kann
+        self.dal = dal_objekt
+
+    def haus_erstellen(self, h_id, name, ort, preis, kapazitaet):
+        # 1. Regelprüfung: Existiert die ID schon?
+        if self.dal.abrufen(h_id):
+            return False, "ID existiert bereits!"
+
+        # 2. Datenstruktur vorbereiten
+        neues_haus = {
+            "id": h_id, "name": name, "ort": ort,
+            "preis_pro_nacht": preis, "kapazitaet": kapazitaet,
+            "verfuegbarkeit": True
+        }
+
+        # 3. An den DAL zum Speichern geben
+        self.dal.hinzufuegen(neues_haus)
+        return True, "Erfolg!"
+Verwende Code mit Vorsicht.
+
+Schritt 3: Das Gesicht (pl.py)
+Hier kümmern wir uns nur um input() und print(). Die PL fragt die BLL: "Darf ich das?"
+python
+class PresentationLayer:
+    def __init__(self, bll_objekt):
+        self.bll = bll_objekt
+
+    def start(self):
+        # Eine Endlosschleife für das Menü
+        while True:
+            print("\n1. Haus anlegen\n2. Beenden")
+            wahl = input("Wahl: ")
+            if wahl == "1":
+                # User Input sammeln
+                # Dann die BLL-Methode aufrufen und das Ergebnis anzeigen
+                ok, msg = self.bll.haus_erstellen(...)
+                print(msg)
+            elif wahl == "2":
+                break
+Verwende Code mit Vorsicht.
+
+Schritt 4: Der Kleber (main.py)
+Hier wird alles zusammengebaut. Das nennt man Dependency Injection.
+python
+from dal import DataAccessLayer
+from bll import BusinessLogicLayer
+from pl import PresentationLayer
+
+# 1. Erstelle das Lager
+lager = DataAccessLayer()
+# 2. Gib das Lager an die Logik weiter
+logik = BusinessLogicLayer(lager)
+# 3. Gib die Logik an die Anzeige weiter
+anzeige = PresentationLayer(logik)
+
+# 4. Startschuss
+anzeige.start()
+Verwende Code mit Vorsicht.
+
+4. Warum machen wir das so? (Wichtige Konzepte)
+Entkopplung: Wenn du die Daten später in einer Textdatei speichern willst, änderst du nur die dal.py. Die pl.py merkt davon gar nichts!
+Wiederverwendbarkeit: Du könntest später eine MobileAppLayer schreiben, die dieselbe bll.py nutzt wie dein Terminal-Programm.
+Testbarkeit: Du kannst die bll.py testen, ohne dass du ein Menü bedienen musst.
+5. Tipps für deinen Start von 0
+Dateien anlegen: Erstelle sofort alle 4 leeren .py Dateien.
+Klassengerüste: Schreibe in jede Datei die Klasse und das def __init__(self, ...):.
+Datenfluss planen: Überleg dir: "Wenn der User auf 'Buchen' klickt, welche Daten müssen von PL zu BLL zu DAL fließen?"
+Klein anfangen: Implementiere erst nur "Haus hinzufügen". Wenn das klappt, baue "Suchen" ein.
