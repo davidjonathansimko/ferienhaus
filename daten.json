@@ -6,5 +6,13 @@
         "preis_pro_nacht": 120.0,
         "kapazitaet": 6,
         "verfuegbarkeit": false
+    },
+    "02": {
+        "id": "02",
+        "name": "Villa2",
+        "ort": "California",
+        "preis_pro_nacht": 222.0,
+        "kapazitaet": 9,
+        "verfuegbarkeit": true
     }
 }
