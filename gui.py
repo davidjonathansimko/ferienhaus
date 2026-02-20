@@ -11,7 +11,7 @@ hide_style = """
     <style>
     
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    
     .stAppDeployButton {display:none;} 
     </style>
     """
