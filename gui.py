@@ -6,10 +6,10 @@ from bll import BusinessLogicLayer
 st.set_page_config(page_title="Ferienhaus Manager", layout="wide")
 
 # 2. HIER DEIN CSS: Versteckt Header, Footer und Menü für einen "Clean Look"
-#MainMenu {visibility: hidden;}
+#
 hide_style = """
     <style>
-    
+    MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
     .stAppDeployButton {display:none;} 
