@@ -5,6 +5,17 @@ from bll import BusinessLogicLayer
 # App Konfiguration
 st.set_page_config(page_title="Ferienhaus Manager", layout="wide")
 
+# 2. HIER DEIN CSS: Versteckt Header, Footer und Menü für einen "Clean Look"
+hide_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;} 
+    </style>
+    """
+st.markdown(hide_style, unsafe_allow_html=True)
+
 # Initialisierung der Logik im SessionState (LocalStorage-Ersatz)
 if 'bll' not in st.session_state:
     st.session_state.bll = BusinessLogicLayer(DataAccessLayer())
